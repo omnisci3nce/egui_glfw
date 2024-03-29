@@ -2,8 +2,8 @@
 // based on the example from:
 // https://github.com/brendanzab/gl-rs/blob/master/gl/examples/triangle.rs
 
-use egui_glfw_gl::gl;
-use egui_glfw_gl::gl::types::*;
+use egui_glfw::gl;
+use egui_glfw::gl::types::*;
 use std::{mem, ptr, str};
 
 use std::ffi::CString;
@@ -167,6 +167,7 @@ impl Triangle {
             gl::BufferData(
                 gl::ARRAY_BUFFER,
                 (VERTEX_DATA.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                #[allow(clippy::useless_transmute)]
                 mem::transmute(&VERTEX_DATA[0]),
                 gl::STATIC_DRAW,
             );
