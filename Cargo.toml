@@ -10,7 +10,7 @@ readme = "README.md"
 repository = "https://github.com/r-esu/egui_glfw"
 categories = ["gui", "graphics"]
 keywords = ["glfw", "opengl", "egui", "gui", "gamedev"]
-include = ["**/*.rs", "Cargo.toml"]
+include = ["**/*.rs", "Cargo.toml", "**/*.vert", "**/*.frag"]
 
 [dependencies]
 gl = "*"
