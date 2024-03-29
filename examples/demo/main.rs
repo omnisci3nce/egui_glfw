@@ -3,7 +3,7 @@ use egui_glfw as egui_backend;
 use std::time::Instant;
 
 use egui_backend::egui::{vec2, Color32, Image, Pos2, Rect};
-use egui_glfw::glfw::Context;
+use egui_glfw::glfw::{Context, fail_on_errors};
 
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
@@ -13,7 +13,7 @@ const PIC_HEIGHT: i32 = 192;
 mod triangle;
 
 fn main() {
-    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+    let mut glfw = glfw::init(glfw::fail_on_errors!()).unwrap();
     glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
     glfw.window_hint(glfw::WindowHint::OpenGlProfile(
         glfw::OpenGlProfileHint::Core,
@@ -35,7 +35,7 @@ fn main() {
     window.set_key_polling(true);
     window.set_mouse_button_polling(true);
     window.make_current();
-    glfw.set_swap_interval(glfw::SwapInterval::Sync(1));
+    glfw.set_swap_interval(glfw::SwapInterval::None);
 
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
@@ -68,13 +68,14 @@ fn main() {
     let mut test_str =
         "A text box to write in. Cut, copy, paste commands are available.".to_owned();
 
+    egui_input_state.input.time = Some(0.01);
+    egui_input_state.input.pixels_per_point = Some(native_pixels_per_point);
+    
     let triangle = triangle::Triangle::new();
     let mut quit = false;
-
+    
     while !window.should_close() {
-        egui_input_state.input.time = Some(start_time.elapsed().as_secs_f64());
         egui_ctx.begin_frame(egui_input_state.input.take());
-        egui_input_state.input.pixels_per_point = Some(native_pixels_per_point);
 
         unsafe {
             gl::ClearColor(0.455, 0.302, 0.663, 1.0);

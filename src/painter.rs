@@ -224,16 +224,19 @@ impl Painter {
         clipped_primitives: &[egui::ClippedPrimitive],
         textures_delta: &egui::TexturesDelta,
     ) {
+        // Update textures
         for (id, image_delta) in &textures_delta.set {
             self.set_texture(*id, image_delta);
         }
-
+    
+        // Paint primitives
         self.paint_primitives(pixels_per_point, clipped_primitives);
-
+    
+        // Free textures
         for &id in &textures_delta.free {
             self.free_texture(id);
         }
-    }
+    }    
 
     /// Main entry-point for painting a frame.
     pub fn paint_primitives(
@@ -340,10 +343,24 @@ impl Painter {
             .textures
             .get_mut(texture_id)
             .expect("Texture with id has not been created");
-
-        texture.pixels = pixels.iter().flat_map(|a| a.to_array()).collect();
+    
+        let num_pixels = pixels.len();
+        let num_bytes = num_pixels * 4;
+    
+        texture.pixels.clear(); // Clear existing data
+        texture.pixels.reserve(num_bytes);
+    
+        // Safety: We trust that the memory allocated by `reserve` is uninitialized.
+        unsafe {
+            let dest_ptr = texture.pixels.as_mut_ptr() as *mut u8;
+            let src_ptr = pixels.as_ptr() as *const u8;
+            std::ptr::copy_nonoverlapping(src_ptr, dest_ptr, num_bytes);
+            texture.pixels.set_len(num_bytes);
+        }
+    
         texture.dirty = true;
     }
+      
 
     fn paint_mesh(&self, mesh: &Mesh, clip_rect: &Rect, pixels_per_point: f32) {
         debug_assert!(mesh.is_valid());
