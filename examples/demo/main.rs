@@ -1,7 +1,5 @@
 use egui_glfw as egui_backend;
 
-use std::time::Instant;
-
 use egui_backend::egui::{vec2, Color32, Image, Pos2, Rect};
 use egui_glfw::glfw::{Context, fail_on_errors};
 
@@ -54,7 +52,6 @@ fn main() {
         ..Default::default()
     });
 
-    let start_time = Instant::now();
     let srgba = vec![Color32::BLACK; (PIC_HEIGHT * PIC_WIDTH) as usize];
 
     let plot_tex_id = painter.new_user_texture(
