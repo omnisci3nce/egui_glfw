@@ -35,4 +35,4 @@ $ cargo run --example demo
 
 ## Credits
 
-**`egui_glfw`** is a fork of **[egui_glfw_gl](https://github.com/cohaereo/egui_glfw_gl)** and based of **[egui_sdl2_gl](https://github.com/ArjunNair/egui_sdl2_gl)**, created by **[ArjunNair](https://github.com/ArjunNair)**
+**`egui_glfw`** is a fork off **[egui_glfw_gl](https://github.com/cohaereo/egui_glfw_gl)** and based off **[egui_sdl2_gl](https://github.com/ArjunNair/egui_sdl2_gl)**, created by **[ArjunNair](https://github.com/ArjunNair)**
