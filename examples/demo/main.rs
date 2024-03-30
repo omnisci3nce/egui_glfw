@@ -12,7 +12,7 @@ mod triangle;
 
 fn main() {
     let mut glfw = glfw::init(glfw::fail_on_errors!()).unwrap();
-    glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
+    glfw.window_hint(glfw::WindowHint::ContextVersion(3, 3));
     glfw.window_hint(glfw::WindowHint::OpenGlProfile(
         glfw::OpenGlProfileHint::Core,
     ));
@@ -30,7 +30,8 @@ fn main() {
 
     window.set_all_polling(true);
     window.make_current();
-    glfw.set_swap_interval(glfw::SwapInterval::Sync(1));
+    // glfw.set_swap_interval(glfw::SwapInterval::Adaptive);
+    glfw.set_swap_interval(glfw::SwapInterval::None);
 
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
@@ -51,14 +52,11 @@ fn main() {
     egui_input_state.input.time = Some(0.01);
     
     let triangle = triangle::Triangle::new();
-    let quit = false;
     let slider = &mut 0.0;
-    
+
     // Main rendering loop
     while !window.should_close() {
         glfw.poll_events();
-
-        glfw.set_swap_interval(glfw::SwapInterval::Adaptive);
 
         egui_ctx.begin_frame(egui_input_state.input.take());
 
@@ -112,10 +110,7 @@ fn main() {
                 }
             }
         }
+        
         window.swap_buffers();
-
-        if quit {
-            break;
-        }
     }
 }
