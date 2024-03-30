@@ -30,8 +30,8 @@ fn main() {
 
     window.set_all_polling(true);
     window.make_current();
-    // glfw.set_swap_interval(glfw::SwapInterval::Adaptive);
-    glfw.set_swap_interval(glfw::SwapInterval::None);
+    // glfw.set_swap_interval(glfw::SwapInterval::None);
+    glfw.set_swap_interval(glfw::SwapInterval::Adaptive);
 
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
