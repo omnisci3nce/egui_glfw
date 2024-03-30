@@ -1,12 +1,12 @@
 use egui_glfw as egui_backend;
 
-use egui_backend::egui::{vec2, Color32, Image, Pos2, Rect};
+use egui_backend::egui::{vec2, Pos2, Rect};
 use egui_glfw::glfw::{Context, fail_on_errors};
 
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
-const PIC_WIDTH: i32 = 320;
-const PIC_HEIGHT: i32 = 192;
+// const PIC_WIDTH: i32 = 320;
+// const PIC_HEIGHT: i32 = 192;
 
 mod triangle;
 
@@ -28,12 +28,9 @@ fn main() {
         )
         .expect("Failed to create GLFW window.");
 
-    window.set_char_polling(true);
-    window.set_cursor_pos_polling(true);
-    window.set_key_polling(true);
-    window.set_mouse_button_polling(true);
+    window.set_all_polling(true);
     window.make_current();
-    glfw.set_swap_interval(glfw::SwapInterval::None);
+    glfw.set_swap_interval(glfw::SwapInterval::Sync(1));
 
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
@@ -48,93 +45,51 @@ fn main() {
             Pos2::new(0f32, 0f32),
             vec2(width as f32, height as f32) / native_pixels_per_point,
         )),
-        pixels_per_point: Some(native_pixels_per_point),
         ..Default::default()
     });
 
-    let srgba = vec![Color32::BLACK; (PIC_HEIGHT * PIC_WIDTH) as usize];
-
-    let plot_tex_id = painter.new_user_texture(
-        (PIC_WIDTH as usize, PIC_HEIGHT as usize),
-        &srgba,
-        egui::TextureFilter::Linear,
-    );
-
-    let mut sine_shift = 0f32;
-    let mut amplitude = 50f32;
-    let mut test_str =
-        "A text box to write in. Cut, copy, paste commands are available.".to_owned();
-
     egui_input_state.input.time = Some(0.01);
-    egui_input_state.input.pixels_per_point = Some(native_pixels_per_point);
     
     let triangle = triangle::Triangle::new();
-    let mut quit = false;
+    let quit = false;
+    let slider = &mut 0.0;
     
+    // Main rendering loop
     while !window.should_close() {
+        glfw.poll_events();
+
+        glfw.set_swap_interval(glfw::SwapInterval::Adaptive);
+
         egui_ctx.begin_frame(egui_input_state.input.take());
 
         unsafe {
             gl::ClearColor(0.455, 0.302, 0.663, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Clear(gl::DEPTH_TEST);
         }
 
         triangle.draw();
 
-        let mut srgba: Vec<Color32> = Vec::new();
-        let mut angle = 0f32;
-
-        for y in 0..PIC_HEIGHT {
-            for x in 0..PIC_WIDTH {
-                srgba.push(Color32::BLACK);
-                if y == PIC_HEIGHT - 1 {
-                    let y = amplitude * (angle * std::f32::consts::PI / 180f32 + sine_shift).sin();
-                    let y = PIC_HEIGHT as f32 / 2f32 - y;
-                    srgba[(y as i32 * PIC_WIDTH + x) as usize] = Color32::YELLOW;
-                    angle += 360f32 / PIC_WIDTH as f32;
-                }
-            }
-        }
-        sine_shift += 0.1f32;
-
-        //This updates the previously initialized texture with new data.
-        //If we weren't updating the texture, this call wouldn't be required.
-        painter.update_user_texture_data(&plot_tex_id, &srgba);
-
         egui::Window::new("Egui with GLFW").show(&egui_ctx, |ui| {
-            egui::TopBottomPanel::top("Top").show(&egui_ctx, |ui| {
-                ui.menu_button("File", |ui| {
-                    {
-                        let _ = ui.button("test 1");
-                    }
-                    ui.separator();
-                    {
-                        let _ = ui.button("test 2");
-                    }
-                });
-            });
-
-            //Image just needs a texture id reference, so we just pass it the texture id that was returned to us
-            //when we previously initialized the texture.
-            ui.add(Image::new(plot_tex_id, vec2(PIC_WIDTH as f32, PIC_HEIGHT as f32)));
-            ui.separator();
             ui.label("A simple sine wave plotted onto a GL texture then blitted to an egui managed Image.");
-            ui.label(" ");
-            ui.text_edit_multiline(&mut test_str);
-            ui.label(" ");            
-            ui.add(egui::Slider::new(&mut amplitude, 0.0..=50.0).text("Amplitude"));
-            ui.label(" ");
-            if ui.button("Quit").clicked() {
-                quit = true;
+            let btn_m = &mut ui.button("-");
+            let btn_p = &mut ui.button("+");
+
+            ui.add(egui::Slider::new(slider, 0.0..=100.0).text("My value"));
+
+            if btn_m.clicked() && *slider > 0.0 {
+                *slider -= 1.0;
+            }
+
+            if btn_p.clicked() && *slider < 100.0 {
+                *slider += 1.0;
             }
         });
 
         let egui::FullOutput {
             platform_output,
-            repaint_after: _,
             textures_delta,
-            shapes,
-        } = egui_ctx.end_frame();
+            shapes, .. } = egui_ctx.end_frame();
 
         //Handle cut, copy text from egui
         if !platform_output.copied_text.is_empty() {
@@ -146,8 +101,8 @@ fn main() {
         //drawing calls with it.
         //Since we are custom drawing an OpenGL Triangle we don't need egui to clear the background.
 
-        let clipped_shapes = egui_ctx.tessellate(shapes);
-        painter.paint_and_update_textures(1.0, &clipped_shapes, &textures_delta);
+        let clipped_shapes = egui_ctx.tessellate(shapes, native_pixels_per_point);
+        painter.paint_and_update_textures(native_pixels_per_point, &clipped_shapes, &textures_delta);
 
         for (_, event) in glfw::flush_messages(&events) {
             match event {
@@ -158,7 +113,6 @@ fn main() {
             }
         }
         window.swap_buffers();
-        glfw.poll_events();
 
         if quit {
             break;
