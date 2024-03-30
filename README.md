@@ -8,7 +8,7 @@ Thanks to **[cohaereo](https://github.com/cohaereo)** for making such a useful c
 
 ---
 
-[![Latest version](https://img.shields.io/crates/v/egui_glfw.svg)](https://crates.io/crates/egui_glfw_gl)
+[![Latest version](https://img.shields.io/crates/v/egui_glfw.svg)](https://crates.io/crates/egui_glfw)
 ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ![Example screenshot](/media/screenshot.png)
