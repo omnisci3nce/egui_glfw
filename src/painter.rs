@@ -88,7 +88,6 @@ fn link_program(vs: GLuint, fs: GLuint) -> GLuint {
     program
 }
 
-#[derive(Default)]
 pub struct UserTexture {
     size: (usize, usize),
 
@@ -351,6 +350,7 @@ impl Painter {
     
         // Safety: We trust that the memory allocated by `reserve` is uninitialized.
         unsafe {
+            #[allow(clippy::unnecessary_cast)]
             let dest_ptr = texture.pixels.as_mut_ptr() as *mut u8;
             let src_ptr = pixels.as_ptr() as *const u8;
             std::ptr::copy_nonoverlapping(src_ptr, dest_ptr, num_bytes);
@@ -557,7 +557,7 @@ impl Painter {
 
                         let gamma = 1.0;
                         let data: Vec<u8> = image
-                            .srgba_pixels(gamma)
+                            .srgba_pixels(Some(gamma))
                             .flat_map(|a| a.to_array())
                             .collect();
 
@@ -595,7 +595,7 @@ impl Painter {
 
                     let gamma = 1.0;
                     let pixels = image
-                        .srgba_pixels(gamma)
+                        .srgba_pixels(Some(gamma))
                         .flat_map(|a| a.to_array())
                         .collect();
 

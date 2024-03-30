@@ -46,11 +46,11 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
             state.input.screen_rect = Some(Rect::from_min_size(
                 Pos2::new(0f32, 0f32),
                 egui::vec2(width as f32, height as f32)
-                    / state.input.pixels_per_point.unwrap_or(1.0),
+                    / 1.0,
             ));
         }
 
-        MouseButton(mouse_btn, glfw::Action::Press, _) => {
+        MouseButton(mouse_btn, action, _) => {
             state.input.events.push(egui::Event::PointerButton {
                 pos: state.pointer_pos,
                 button: match mouse_btn {
@@ -59,34 +59,20 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
                     glfw::MouseButtonMiddle => egui::PointerButton::Middle,
                     _ => unreachable!(),
                 },
-                pressed: true,
-                modifiers: state.modifiers,
-            })
-        }
-
-        MouseButton(mouse_btn, glfw::Action::Release, _) => {
-            state.input.events.push(egui::Event::PointerButton {
-                pos: state.pointer_pos,
-                button: match mouse_btn {
-                    glfw::MouseButtonLeft => egui::PointerButton::Primary,
-                    glfw::MouseButtonRight => egui::PointerButton::Secondary,
-                    glfw::MouseButtonMiddle => egui::PointerButton::Middle,
-                    _ => unreachable!(),
-                },
-                pressed: false,
-                modifiers: state.modifiers,
-            })
+                pressed: action == glfw::Action::Press,
+                modifiers: state.modifiers
+            });
         }
 
         CursorPos(x, y) => {
             state.pointer_pos = pos2(
-                x as f32 / state.input.pixels_per_point.unwrap_or(1.0),
-                y as f32 / state.input.pixels_per_point.unwrap_or(1.0),
+                x as f32 / 1.0,
+                y as f32 / 1.0,
             );
             state
                 .input
                 .events
-                .push(egui::Event::PointerMoved(state.pointer_pos))
+                .push(egui::Event::PointerMoved(state.pointer_pos));
         }
 
         Key(keycode, _scancode, glfw::Action::Release, keymod) => {
@@ -106,6 +92,8 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
 
                 state.input.events.push(Event::Key {
                     key,
+                    physical_key: Some(key),
+                    repeat: true,
                     pressed: false,
                     modifiers: state.modifiers,
                 });
@@ -142,6 +130,8 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
                 } else {
                     state.input.events.push(Event::Key {
                         key,
+                        physical_key: Some(key),
+                        repeat: true,
                         pressed: true,
                         modifiers: state.modifiers,
                     });

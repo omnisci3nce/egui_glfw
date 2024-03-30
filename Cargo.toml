@@ -15,7 +15,7 @@ include = ["**/*.rs", "Cargo.toml", "**/*.vert", "**/*.frag"]
 [dependencies]
 gl = "0.14.0"
 glfw = "0.55.0"
-egui = "0.19.0"
+egui = "0.27.1"
 
 [dependencies.clipboard]
 package = "cli-clipboard"
