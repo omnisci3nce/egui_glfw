@@ -1,6 +1,6 @@
 [package]
 name = "egui_glfw"
-version = "0.55.0"
+version = "0.55.1"
 authors = ["cohaereo <lucasteal@protonmail.com>", "r-esu <random@mail.com>"]
 edition = "2021"
 description = "OpenGL backend for egui using GLFW"
