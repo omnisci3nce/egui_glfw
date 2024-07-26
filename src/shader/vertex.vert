@@ -1,13 +1,13 @@
-#version 100
+#version 330 core
 
 uniform vec2 u_screen_size;
 
-attribute vec2 a_pos;
-attribute vec2 a_tc;
-attribute vec4 a_srgba;
+in vec2 a_pos;
+in vec2 a_tc;
+in vec4 a_srgba;
 
-varying vec2 v_tc;
-varying vec4 v_rgba;
+out vec2 v_tc;
+out vec4 v_rgba;
 
 // 0-1 linear  from  0-255 sRGB
 vec3 linear_from_srgb(vec3 srgb) {

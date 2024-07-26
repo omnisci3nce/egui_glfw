@@ -13,6 +13,7 @@ mod triangle;
 fn main() {
     let mut glfw = glfw::init(glfw::fail_on_errors!()).unwrap();
     glfw.window_hint(glfw::WindowHint::ContextVersion(3, 3));
+    glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
     glfw.window_hint(glfw::WindowHint::OpenGlProfile(
         glfw::OpenGlProfileHint::Core,
     ));
@@ -39,7 +40,8 @@ fn main() {
     let egui_ctx = egui::Context::default();
 
     let (width, height) = window.get_framebuffer_size();
-    let native_pixels_per_point = window.get_content_scale().0;
+    let native_pixels_per_point =  4.0; // window.get_content_scale().0;
+        egui_ctx.set_pixels_per_point(4.0);
 
     let mut egui_input_state = egui_backend::EguiInputState::new(egui::RawInput {
         screen_rect: Some(Rect::from_min_size(
