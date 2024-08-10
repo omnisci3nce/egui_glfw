@@ -142,13 +142,11 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
             state.input.events.push(Event::Text(c.to_string()));
         }
 
-        Scroll(x, y) => {
-            state
-                .input
-                .events
-                .push(Event::Scroll(vec2(x as f32, y as f32)));
-        }
-
+        Scroll(x, y) => state.input.events.push(Event::MouseWheel {
+            unit: MouseWheelUnit::Point,
+            delta: vec2(x as f32, y as f32),
+            modifiers: state.modifiers,
+        }),
         _ => {}
     }
 }
