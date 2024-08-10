@@ -264,7 +264,6 @@ impl Painter {
         let u_screen_size_ptr = u_screen_size.as_ptr();
         let u_screen_size_loc = unsafe { gl::GetUniformLocation(self.program, u_screen_size_ptr) };
         let screen_size_pixels = egui::vec2(self.canvas_width as f32, self.canvas_height as f32);
-        // dbg!(screen_size_pixels);
         let screen_size_points = screen_size_pixels / pixels_per_point;
 
         unsafe {
@@ -278,7 +277,7 @@ impl Painter {
         let u_sampler = CString::new("u_sampler").unwrap();
         let u_sampler_ptr = u_sampler.as_ptr();
         let u_sampler_loc = unsafe { gl::GetUniformLocation(self.program, u_sampler_ptr) };
-        // dbg!(self.canvas_width, self.canvas_height);
+
         unsafe {
             gl::Uniform1i(u_sampler_loc, 0);
             gl::Viewport(0, 0, self.canvas_width as i32, self.canvas_height as i32);
@@ -378,8 +377,7 @@ impl Painter {
             }
 
             let screen_size_pixels =
-                egui::vec2(self.canvas_width as f32, self.canvas_height as f32) * 2.0;
-            // dbg!(screen_size_pixels, pixels_per_point);
+                egui::vec2(self.canvas_width as f32, self.canvas_height as f32);
             let clip_min_x = pixels_per_point * clip_rect.min.x;
             let clip_min_y = pixels_per_point * clip_rect.min.y;
             let clip_max_x = pixels_per_point * clip_rect.max.x;

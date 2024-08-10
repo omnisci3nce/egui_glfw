@@ -66,7 +66,6 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
         }
 
         CursorPos(x, y) => {
-            // println!("Cursor Pos: ({x}, {y}",);
             state.pointer_pos = pos2(x as f32 / 1.0, y as f32 / 1.0);
             state
                 .input
