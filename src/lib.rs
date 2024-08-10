@@ -25,15 +25,17 @@ pub struct EguiInputState {
     pub clipboard: Option<ClipboardContext>,
     pub input: RawInput,
     pub modifiers: Modifiers,
+    pub pixels_per_point: f32,
 }
 
 impl EguiInputState {
-    pub fn new(input: RawInput) -> Self {
+    pub fn new(input: RawInput, ppp: f32) -> Self {
         EguiInputState {
             pointer_pos: Pos2::new(0f32, 0f32),
             clipboard: init_clipboard(),
             input,
             modifiers: Modifiers::default(),
+            pixels_per_point: ppp,
         }
     }
 }
@@ -45,8 +47,7 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
         FramebufferSize(width, height) => {
             state.input.screen_rect = Some(Rect::from_min_size(
                 Pos2::new(0f32, 0f32),
-                egui::vec2(width as f32, height as f32)
-                    / 1.0,
+                egui::vec2(width as f32, height as f32) / state.pixels_per_point,
             ));
         }
 
@@ -60,15 +61,13 @@ pub fn handle_event(event: glfw::WindowEvent, state: &mut EguiInputState) {
                     _ => unreachable!(),
                 },
                 pressed: action == glfw::Action::Press,
-                modifiers: state.modifiers
+                modifiers: state.modifiers,
             });
         }
 
         CursorPos(x, y) => {
-            state.pointer_pos = pos2(
-                x as f32 / 1.0,
-                y as f32 / 1.0,
-            );
+            // println!("Cursor Pos: ({x}, {y}",);
+            state.pointer_pos = pos2(x as f32 / 1.0, y as f32 / 1.0);
             state
                 .input
                 .events

@@ -1,7 +1,7 @@
 use egui_glfw as egui_backend;
 
 use egui_backend::egui::{vec2, Pos2, Rect};
-use egui_glfw::glfw::{Context, fail_on_errors};
+use egui_glfw::glfw::{fail_on_errors, Context};
 
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
@@ -40,19 +40,24 @@ fn main() {
     let egui_ctx = egui::Context::default();
 
     let (width, height) = window.get_framebuffer_size();
-    let native_pixels_per_point =  4.0; // window.get_content_scale().0;
-        egui_ctx.set_pixels_per_point(4.0);
+    dbg!(width, height);
+    let native_pixels_per_point = window.get_content_scale().0;
+    dbg!(native_pixels_per_point);
+    egui_ctx.set_pixels_per_point(native_pixels_per_point);
 
-    let mut egui_input_state = egui_backend::EguiInputState::new(egui::RawInput {
-        screen_rect: Some(Rect::from_min_size(
-            Pos2::new(0f32, 0f32),
-            vec2(width as f32, height as f32) / native_pixels_per_point,
-        )),
-        ..Default::default()
-    });
+    let mut egui_input_state = egui_backend::EguiInputState::new(
+        egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                Pos2::new(0f32, 0f32),
+                vec2(width as f32, height as f32) / native_pixels_per_point,
+            )),
+            ..Default::default()
+        },
+        native_pixels_per_point,
+    );
 
     egui_input_state.input.time = Some(0.01);
-    
+
     let triangle = triangle::Triangle::new();
     let slider = &mut 0.0;
 
@@ -89,7 +94,9 @@ fn main() {
         let egui::FullOutput {
             platform_output,
             textures_delta,
-            shapes, .. } = egui_ctx.end_frame();
+            shapes,
+            ..
+        } = egui_ctx.end_frame();
 
         //Handle cut, copy text from egui
         if !platform_output.copied_text.is_empty() {
@@ -102,7 +109,11 @@ fn main() {
         //Since we are custom drawing an OpenGL Triangle we don't need egui to clear the background.
 
         let clipped_shapes = egui_ctx.tessellate(shapes, native_pixels_per_point);
-        painter.paint_and_update_textures(native_pixels_per_point, &clipped_shapes, &textures_delta);
+        painter.paint_and_update_textures(
+            native_pixels_per_point,
+            &clipped_shapes,
+            &textures_delta,
+        );
 
         for (_, event) in glfw::flush_messages(&events) {
             match event {
@@ -112,7 +123,7 @@ fn main() {
                 }
             }
         }
-        
+
         window.swap_buffers();
     }
 }

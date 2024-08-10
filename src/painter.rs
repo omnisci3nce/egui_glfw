@@ -1,9 +1,9 @@
-use gl;
 use egui::{
     emath::Rect,
     epaint::{Mesh, Primitive},
     Color32, TextureFilter,
 };
+use gl;
 
 use gl::types::{GLchar, GLenum, GLint, GLsizeiptr, GLuint};
 use std::ffi::{c_void, CString};
@@ -167,7 +167,9 @@ pub struct Painter {
     tc_buffer: GLuint,
     color_buffer: GLuint,
 
+    /// canvas width in pixels (not logical units)
     canvas_width: u32,
+    /// canvas height in pixels (not logical units)
     canvas_height: u32,
 
     textures: std::collections::HashMap<egui::TextureId, UserTexture>,
@@ -199,6 +201,7 @@ impl Painter {
         }
 
         let (canvas_width, canvas_height) = window.get_size();
+        let content_scale = window.get_content_scale(); // painter will deal with pixels primarily
 
         Painter {
             program,
@@ -209,8 +212,8 @@ impl Painter {
             tc_buffer,
             color_buffer,
 
-            canvas_width: canvas_width as _,
-            canvas_height: canvas_height as _,
+            canvas_width: (canvas_width as f32 * content_scale.0) as _,
+            canvas_height: (canvas_height as f32 * content_scale.1) as _,
 
             textures: Default::default(),
         }
@@ -226,15 +229,15 @@ impl Painter {
         for (id, image_delta) in &textures_delta.set {
             self.set_texture(*id, image_delta);
         }
-    
+
         // Paint primitives
         self.paint_primitives(pixels_per_point, clipped_primitives);
-    
+
         // Free textures
         for &id in &textures_delta.free {
             self.free_texture(id);
         }
-    }    
+    }
 
     /// Main entry-point for painting a frame.
     pub fn paint_primitives(
@@ -261,6 +264,7 @@ impl Painter {
         let u_screen_size_ptr = u_screen_size.as_ptr();
         let u_screen_size_loc = unsafe { gl::GetUniformLocation(self.program, u_screen_size_ptr) };
         let screen_size_pixels = egui::vec2(self.canvas_width as f32, self.canvas_height as f32);
+        // dbg!(screen_size_pixels);
         let screen_size_points = screen_size_pixels / pixels_per_point;
 
         unsafe {
@@ -274,6 +278,7 @@ impl Painter {
         let u_sampler = CString::new("u_sampler").unwrap();
         let u_sampler_ptr = u_sampler.as_ptr();
         let u_sampler_loc = unsafe { gl::GetUniformLocation(self.program, u_sampler_ptr) };
+        // dbg!(self.canvas_width, self.canvas_height);
         unsafe {
             gl::Uniform1i(u_sampler_loc, 0);
             gl::Viewport(0, 0, self.canvas_width as i32, self.canvas_height as i32);
@@ -341,13 +346,13 @@ impl Painter {
             .textures
             .get_mut(texture_id)
             .expect("Texture with id has not been created");
-    
+
         let num_pixels = pixels.len();
         let num_bytes = num_pixels * 4;
-    
+
         texture.pixels.clear(); // Clear existing data
         texture.pixels.reserve(num_bytes);
-    
+
         // Safety: We trust that the memory allocated by `reserve` is uninitialized.
         unsafe {
             #[allow(clippy::unnecessary_cast)]
@@ -356,10 +361,9 @@ impl Painter {
             std::ptr::copy_nonoverlapping(src_ptr, dest_ptr, num_bytes);
             texture.pixels.set_len(num_bytes);
         }
-    
+
         texture.dirty = true;
     }
-      
 
     fn paint_mesh(&self, mesh: &Mesh, clip_rect: &Rect, pixels_per_point: f32) {
         debug_assert!(mesh.is_valid());
@@ -374,8 +378,8 @@ impl Painter {
             }
 
             let screen_size_pixels =
-                egui::vec2(self.canvas_width as f32, self.canvas_height as f32);
-
+                egui::vec2(self.canvas_width as f32, self.canvas_height as f32) * 2.0;
+            // dbg!(screen_size_pixels, pixels_per_point);
             let clip_min_x = pixels_per_point * clip_rect.min.x;
             let clip_min_y = pixels_per_point * clip_rect.min.y;
             let clip_max_x = pixels_per_point * clip_rect.max.x;
